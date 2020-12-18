@@ -15,7 +15,6 @@ app.get("/", async (req, res) => {
   let lat = +req.query.lat;
   let long = +req.query.long;
   let radius = +req.query.radius;
-  let unit = req.query.unit.toString();
 
   let allUsers = await Users.findAll({
     attributes: ["user_id", "name", "lat", "long"],
@@ -24,7 +23,7 @@ app.get("/", async (req, res) => {
 
   let result = [];
   allUsers.forEach((user) => {
-    user.distance = distance(lat, long, user.lat, user.long, unit);
+    user.distance = distance(lat, long, user.lat, user.long);
     if (user.distance < radius) {
       result.push(user);
     }
@@ -47,7 +46,7 @@ app.get("/", async (req, res) => {
   res.json(result);
 });
 
-let distance = (lat1, lon1, lat2, lon2, unit = "N") => {
+let distance = (lat1, lon1, lat2, lon2) => {
   let radlat1 = (Math.PI * lat1) / 180;
   let radlat2 = (Math.PI * lat2) / 180;
   let theta = lon1 - lon2;
@@ -62,12 +61,7 @@ let distance = (lat1, lon1, lat2, lon2, unit = "N") => {
   dist = Math.acos(dist);
   dist = (dist * 180) / Math.PI;
   dist = dist * 60 * 1.1515;
-  if (unit === "K") {
-    dist = dist * 1.609344;
-  }
-  if (unit === "N") {
-    dist = dist * 0.8684;
-  }
+  dist = dist * 0.8684; //mutiply with 0.8684 for Nautical Miles and 1.609344 for Kilometers
   return dist;
 };
 
